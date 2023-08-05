@@ -4,41 +4,41 @@ import { User } from "../models/users.model.js";
 
 // middleware to check and validate jwt token
 const protect = asyncHandler(async (req, res, next) => {
-  let token;
+    let token;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    try {
-      token = req.headers.authorization.split(" ")[1];
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith("Bearer")
+    ) {
+        try {
+            token = req.headers.authorization.split(" ")[1];
 
-      const decoded = jwt.verify(token, "process.env.JWT_SECRET");
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      req.user = await User.findById(decoded.id.id).select("-password");
+            req.user = await User.findById(decoded.id.id).select("-password");
 
-      next();
-    } catch (error) {
-      console.error(error);
-      res.status(401);
-      throw new Error("Not authorized, token failed");
+            next();
+        } catch (error) {
+            console.error(error);
+            res.status(401);
+            throw new Error("Not authorized, token failed");
+        }
     }
-  }
 
-  if (!token) {
-    res.status(401);
-    throw new Error("Not authorized, no token");
-  }
+    if (!token) {
+        res.status(401);
+        throw new Error("Not authorized, no token");
+    }
 });
 
 //  secondary middleware to check if authorized user is of type user or not
 const isAdmin = (req, res, next) => {
-  if (req.user.type === "admin") {
-    next();
-  } else {
-    res.status(401);
-    throw new Error("Not authorized as a user!");
-  }
+    if (req.user.type === "admin") {
+        next();
+    } else {
+        res.status(401);
+        throw new Error("Not authorized as a user!");
+    }
 };
 
 export { protect, isAdmin };
